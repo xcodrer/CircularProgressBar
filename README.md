@@ -1,4 +1,4 @@
-Theme Class circle progressbar for .Net project
+Control Class circle progressbar for .Net project
 
 <img
 src="https://github.com/xcodrer/CircularProgressBar/blob/master/CircularProgressBar.png"
