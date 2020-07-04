@@ -1,7 +1,7 @@
 Imports System.ComponentModel
 Imports System.Drawing.Drawing2D
 Public Class CircularProgressBar
-    Inherits Control
+    Inherits UserControl
     Public Enum _ProgressShape
         Round
         Flat
@@ -15,7 +15,7 @@ Public Class CircularProgressBar
     Private _Value As Integer = 0
     Private _Maximum As Integer = 100
     Private _LineWitdh As Integer = 5
-    Private _BarWidth As Single = 14
+    Private _BarWidth As Single = 11
     Private _ProgressColor1 As Color = Color.Orange
     Private _ProgressColor2 As Color = Color.Orange
     Private _LineColor As Color = Color.LightGray
@@ -24,20 +24,22 @@ Public Class CircularProgressBar
     Private ProgressTextMode As _TextMode
     Private _ShadowOffset As Single = 0
     Public Sub New()
-        'SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.ResizeRedraw Or ControlStyles.OptimizedDoubleBuffer Or ControlStyles.SupportsTransparentBackColor, True)
+        MyBase.SuspendLayout()
+        'SetStyle(ControlStyles.AllPaintingInWmPaint Or ControlStyles.UserPaint Or ControlStyles.ResizeRedraw Or ControlStyles.OptimizedDoubleBuffer Or ControlStyles.SupportsTransparentBackColor Or ControlStyles.Opaque, True)
         SetStyle(ControlStyles.SupportsTransparentBackColor, True)
         SetStyle(ControlStyles.Opaque, True)
-        'BackColor = Color.Transparent
         BackColor = SystemColors.Control
         ForeColor = Color.DimGray
-        'Size = New Size(130, 130)
+        Size = New Size(75, 75)
         Font = New Font("Segoe UI", 15)
-        'MinimumSize = New Size(100, 100)
+        MinimumSize = New Size(58, 58)
         DoubleBuffered = True
         LineColor = Color.LightGray
         Value = 50
         ProgressShape = _ProgressShape.Flat
         TextMode = _TextMode.Percentage
+        MyBase.ResumeLayout(False)
+        MyBase.PerformLayout()
     End Sub
     <Description("Integer Value that determines the position of the Progress Bar."), Category("Behavior")>
     Public Property Value() As Long
@@ -157,7 +159,6 @@ Public Class CircularProgressBar
             Invalidate()
         End Set
     End Property
-
     Protected Overloads Overrides Sub OnResize(e As EventArgs)
         MyBase.OnResize(e)
         SetStandardSize()
@@ -191,11 +192,12 @@ Public Class CircularProgressBar
                 graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias
                 graphics.TextRenderingHint = Drawing.Text.TextRenderingHint.AntiAliasGridFit
                 PaintTransparentBackground(Me, e)
+                Dim rect As Rectangle = New Rectangle(10, 10, MyBase.Width - 20, MyBase.Width - 20)
                 Using mBackColor As Brush = New SolidBrush(BackColor)
-                    graphics.FillEllipse(mBackColor, 18, 18, (Width - 48) + 12, (Height - 48) + 12)
+                    graphics.FillEllipse(mBackColor, rect)
                 End Using
                 Using pen2 As New Pen(LineColor, LineWidth)
-                    graphics.DrawEllipse(pen2, 18, 18, (Width - 48) + 12, (Height - 48) + 12)
+                    graphics.DrawEllipse(pen2, rect)
                 End Using
                 Using brush As New LinearGradientBrush(ClientRectangle, _ProgressColor1, _ProgressColor2, GradientMode)
                     Using pen As New Pen(brush, BarWidth)
@@ -209,7 +211,7 @@ Public Class CircularProgressBar
                                 pen.EndCap = LineCap.Flat
                                 Exit Select
                         End Select
-                        graphics.DrawArc(pen, 18, 18, (Width - 35) - 2, (Height - 35) - 2, -90, CType(Math.Round(360 / _Maximum) * _Value, Integer))
+                        graphics.DrawArc(pen, rect, -90, CType((360 / _Maximum) * _Value, Integer))
 
                     End Using
                 End Using
@@ -222,7 +224,7 @@ Public Class CircularProgressBar
                         Text = _Value.ToString()
                         Exit Select
                     Case _TextMode.Percentage
-                        Text = Convert.ToString(Convert.ToInt32((100 / _Maximum) * _Value))
+                        Text = Convert.ToString((100 / _Maximum) * _Value) & "%"
                         Exit Select
                     Case _TextMode.Custom
                         Text = Text
@@ -231,7 +233,7 @@ Public Class CircularProgressBar
                         Exit Select
                 End Select
 
-                If Not Text = String.Empty Then
+                If Text IsNot String.Empty Then
                     Dim MS As SizeF = graphics.MeasureString(Text, Font)
                     Dim shadowBrush As New SolidBrush(Color.FromArgb(100, ForeColor))
                     If ShadowOffset > 0 Then graphics.DrawString(Text, Font, shadowBrush, (Width / 2 - MS.Width / 2) + ShadowOffset, (Height / 2 - MS.Height / 2) + ShadowOffset)
